@@ -244,31 +244,31 @@ def load_protein_pair(pdb_id, data_dir,single_pdb=False):
     # pdist = pdist<2.0
     # y_p1 = (pdist.sum(1)>0).to(torch.float).reshape(-1,1)
     # y_p2 = (pdist.sum(0)>0).to(torch.float).reshape(-1,1)
-    if single_pdb:
-        if not hasattr(p1, "y"):
-            p1.y = torch.zeros(p1.pos.shape[0], 1)
-        if not hasattr(p2, "y"):
-            p2.y = torch.zeros(p2.pos.shape[0], 1)
+    #if single_pdb:
+    #    if not hasattr(p1, "y"):
+    #        p1.y = torch.zeros(p1.pos.shape[0], 1)
+    #    if not hasattr(p2, "y"):
+    #        p2.y = torch.zeros(p2.pos.shape[0], 1)
     y_p1 = p1.y
     y_p2 = p2.y
 
     protein_pair_data = PairData(
-        xyz_p1=p1["xyz"],
-        xyz_p2=p2["xyz"],
-        face_p1=p1["face"],
-        face_p2=p2["face"],
-        chemical_features_p1=p1["chemical_features"],
-        chemical_features_p2=p2["chemical_features"],
+        xyz_p1=p1.xyz,
+        xyz_p2=p2.xyz,
+        face_p1=p1.face,
+        face_p2=p2.face,
+        chemical_features_p1=p1.chemical_features,
+        chemical_features_p2=p2.chemical_features",
         y_p1=y_p1,
         y_p2=y_p2,
-        normals_p1=p1["normals"],
-        normals_p2=p2["normals"],
-        center_location_p1=p1["center_location"],
-        center_location_p2=p2["center_location"],
-        atom_coords_p1=p1["atom_coords"],
-        atom_coords_p2=p2["atom_coords"],
-        atom_types_p1=p1["atom_types"],
-        atom_types_p2=p2["atom_types"],
+        normals_p1=p1.normals,
+        normals_p2=p2.normals,
+        center_location_p1=p1.center_location,
+        center_location_p2=p2.center_location,
+        atom_coords_p1=p1.atom_coords,
+        atom_coords_p2=p2.atom_coords,
+        atom_types_p1=p1.atom_types,
+        atom_types_p2=p2.atom_types,
     )
     return protein_pair_data
 
