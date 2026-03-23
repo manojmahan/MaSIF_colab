@@ -244,6 +244,11 @@ def load_protein_pair(pdb_id, data_dir,single_pdb=False):
     # pdist = pdist<2.0
     # y_p1 = (pdist.sum(1)>0).to(torch.float).reshape(-1,1)
     # y_p2 = (pdist.sum(0)>0).to(torch.float).reshape(-1,1)
+    if single_pdb:
+        if not hasattr(p1, "y"):
+            p1.y = torch.zeros(p1.pos.shape[0], 1)
+        if not hasattr(p2, "y"):
+            p2.y = torch.zeros(p2.pos.shape[0], 1)
     y_p1 = p1["y"]
     y_p2 = p2["y"]
 
