@@ -249,8 +249,8 @@ def load_protein_pair(pdb_id, data_dir,single_pdb=False):
             p1.y = torch.zeros(p1.pos.shape[0], 1)
         if not hasattr(p2, "y"):
             p2.y = torch.zeros(p2.pos.shape[0], 1)
-    y_p1 = p1["y"]
-    y_p2 = p2["y"]
+    y_p1 = p1.y
+    y_p2 = p2.y
 
     protein_pair_data = PairData(
         xyz_p1=p1["xyz"],
