@@ -11,9 +11,9 @@ from torch.nn import (
 )
 import torch_geometric.transforms as T
 from torch_geometric.data import DataLoader
+from torch_geometric.nn.conv import PointConv,
 from torch_geometric.nn import (
     DynamicEdgeConv,
-    PointConv,
     XConv,
     fps,
     radius,
