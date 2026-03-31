@@ -119,18 +119,63 @@ class NormalizeChemFeatures(object):
         return "{}()".format(self.__class__.__name__)
 
 
+# def load_protein_npy(pdb_id, data_dir, center=False, single_pdb=False):
+#     """Loads a protein surface mesh and its features"""
+
+#     # Load the data, and read the connectivity information:
+#     triangles = (
+#         None
+#         if single_pdb
+#         else inttensor(np.load(data_dir / (pdb_id + "_triangles.npy"))).T
+#     )
+#     # Normalize the point cloud, as specified by the user:
+#     points = None if single_pdb else tensor(np.load(data_dir / (pdb_id + "_xyz.npy")))
+#     center_location = None if single_pdb else torch.mean(points, axis=0, keepdims=True)
+
+#     atom_coords = tensor(np.load(data_dir / (pdb_id + "_atomxyz.npy")))
+#     atom_types = tensor(np.load(data_dir / (pdb_id + "_atomtypes.npy")))
+
+#     if center:
+#         points = points - center_location
+#         atom_coords = atom_coords - center_location
+
+#     # Interface labels
+#     iface_labels = (
+#         None
+#         if single_pdb
+#         else tensor(np.load(data_dir / (pdb_id + "_iface_labels.npy")).reshape((-1, 1)))
+#     )
+
+#     # Features
+#     chemical_features = (
+#         None if single_pdb else tensor(np.load(data_dir / (pdb_id + "_features.npy")))
+#     )
+
+#     # Normals
+#     normals = (
+#         None if single_pdb else tensor(np.load(data_dir / (pdb_id + "_normals.npy")))
+#     )
+
+#     protein_data = Data(
+#         xyz=points,
+#         face=triangles,
+#         chemical_features=chemical_features,
+#         y=iface_labels,
+#         normals=normals,
+#         center_location=center_location,
+#         num_nodes=None if single_pdb else points.shape[0],
+#         atom_coords=atom_coords,
+#         atom_types=atom_types,
+#     )
+#     return protein_data
+
 def load_protein_npy(pdb_id, data_dir, center=False, single_pdb=False):
     """Loads a protein surface mesh and its features"""
 
-    # Load the data, and read the connectivity information:
-    triangles = (
-        None
-        if single_pdb
-        else inttensor(np.load(data_dir / (pdb_id + "_triangles.npy"))).T
-    )
-    # Normalize the point cloud, as specified by the user:
-    points = None if single_pdb else tensor(np.load(data_dir / (pdb_id + "_xyz.npy")))
-    center_location = None if single_pdb else torch.mean(points, axis=0, keepdims=True)
+    # 1. Force the function to load the geometry (Do NOT use 'None')
+    triangles = inttensor(np.load(data_dir / (pdb_id + "_triangles.npy"))).T
+    points = tensor(np.load(data_dir / (pdb_id + "_xyz.npy")))
+    center_location = torch.mean(points, axis=0, keepdims=True)
 
     atom_coords = tensor(np.load(data_dir / (pdb_id + "_atomxyz.npy")))
     atom_types = tensor(np.load(data_dir / (pdb_id + "_atomtypes.npy")))
@@ -139,22 +184,16 @@ def load_protein_npy(pdb_id, data_dir, center=False, single_pdb=False):
         points = points - center_location
         atom_coords = atom_coords - center_location
 
-    # Interface labels
-    iface_labels = (
-        None
-        if single_pdb
-        else tensor(np.load(data_dir / (pdb_id + "_iface_labels.npy")).reshape((-1, 1)))
-    )
+    # 2. Interface labels (y) might genuinely not exist for a single PDB 
+    #    without a known partner, so we handle it with a try/except.
+    try:
+        iface_labels = tensor(np.load(data_dir / (pdb_id + "_iface_labels.npy")).reshape((-1, 1)))
+    except FileNotFoundError:
+        iface_labels = None
 
-    # Features
-    chemical_features = (
-        None if single_pdb else tensor(np.load(data_dir / (pdb_id + "_features.npy")))
-    )
-
-    # Normals
-    normals = (
-        None if single_pdb else tensor(np.load(data_dir / (pdb_id + "_normals.npy")))
-    )
+    # 3. Force the function to load features and normals
+    chemical_features = tensor(np.load(data_dir / (pdb_id + "_features.npy")))
+    normals = tensor(np.load(data_dir / (pdb_id + "_normals.npy")))
 
     protein_data = Data(
         xyz=points,
@@ -163,11 +202,16 @@ def load_protein_npy(pdb_id, data_dir, center=False, single_pdb=False):
         y=iface_labels,
         normals=normals,
         center_location=center_location,
-        num_nodes=None if single_pdb else points.shape[0],
+        num_nodes=points.shape[0],
         atom_coords=atom_coords,
         atom_types=atom_types,
     )
+    
+    # If y is None, PyTorch Geometric drops it, but that's fine because 
+    # inference doesn't require ground-truth labels.
     return protein_data
+
+
 
 
 class PairData(Data):
